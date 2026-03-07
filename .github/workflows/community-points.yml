@@ -40,12 +40,24 @@ concurrency:
 jobs:
   update-points:
     runs-on: ubuntu-latest
+    env:
+      POINTS_BRANCH: community-points-data
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           ref: ${{ github.event.repository.default_branch }}
+
+      - name: Switch to points branch
+        run: |
+          if git ls-remote --exit-code --heads origin "$POINTS_BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$POINTS_BRANCH"
+            git checkout -B "$POINTS_BRANCH" "origin/$POINTS_BRANCH"
+          else
+            git checkout -b "$POINTS_BRANCH"
+          fi
 
       - name: Update points file
         env:
@@ -61,16 +73,22 @@ jobs:
             --output-path "community-points.json" \
             --leaderboard-path "community-leaderboard.md"
 
-      - name: Commit and push if changed
+      - name: Check points changes
+        id: points_changes
         run: |
           if git diff --quiet -- community-points.json community-leaderboard.md; then
             echo "No points update."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
 
+      - name: Commit and push points branch
+        if: steps.points_changes.outputs.changed == 'true'
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add community-points.json community-leaderboard.md
           git commit -m "chore(points): update community points"
-          git push origin HEAD:${{ github.event.repository.default_branch }}
+          git push origin HEAD:"$POINTS_BRANCH"
