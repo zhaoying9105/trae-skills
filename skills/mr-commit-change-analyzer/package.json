@@ -1,0 +1,21 @@
+{
+  "name": "mr-commit-change-analyzer",
+  "version": "1.0.0",
+  "description": "Analyze MR/Commit level code changes, provide intuitive and rich logical interpretation",
+  "main": "SKILL.md",
+  "keywords": ["openclaw-skill", "code-review", "git", "analysis"],
+  "author": "openclaw",
+  "license": "MIT",
+  "openclaw": {
+    "skill": {
+      "runtime": "agent",
+      "permissions": {
+        "filesystem": "read",
+        "shell": "allow"
+      },
+      "requires": {
+        "bins": ["git"]
+      }
+    }
+  }
+}

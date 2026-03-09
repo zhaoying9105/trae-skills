@@ -1,0 +1,21 @@
+{
+  "name": "repo-code-understanding",
+  "version": "1.0.0",
+  "description": "Large-scale code repository understanding with incremental analysis support",
+  "main": "SKILL.md",
+  "keywords": ["openclaw-skill", "code-analysis", "documentation", "architecture"],
+  "author": "openclaw",
+  "license": "MIT",
+  "openclaw": {
+    "skill": {
+      "runtime": "agent",
+      "permissions": {
+        "filesystem": "readwrite",
+        "shell": "allow"
+      },
+      "requires": {
+        "bins": ["git", "node"]
+      }
+    }
+  }
+}

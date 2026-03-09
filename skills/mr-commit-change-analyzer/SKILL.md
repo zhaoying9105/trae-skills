@@ -1,6 +1,16 @@
 ---
 name: mr-commit-change-analyzer
 description: Analyze MR/Commit level code changes, provide intuitive and rich logical interpretation, including intent, impact scope, and potential issues.
+metadata:
+  openclaw:
+    requires:
+      bins: ["git"]
+    permissions:
+      filesystem: "read"
+      shell: "allow"
+    tags: ["code-review", "git", "analysis"]
+    author: "openclaw"
+    version: "1.0.0"
 ---
 
 # MR/Commit Change Analyzer
@@ -17,34 +27,66 @@ Trigger this skill when:
 
 ## Instructions
 
-1. **Input Collection**
-   * Get the MR/commit diff content or access to the git repository
-   * If available, collect related issue links, PR description, and commit messages
-   * Identify the programming language and project context
+1. **Input Collection**: Collect diff, issue links, PR description, and commit messages. Identify language and context.
+2. **Classification**: Categorize changes (feature, bug, refactor, etc.) and group by module. Separate logical from cosmetic changes.
+3. **Deep Analysis**: Identify core intent, map to domains, analyze data flow/API changes, assess impact scope and risks.
+4. **Structure Output**: Use the "Output Template" below. Use clear non-technical language where possible. Include critical code snippets.
+5. **Validation**: Verify against commit messages. Ensure critical changes are covered and flag ambiguities.
 
-2. **Change Classification**
-   * Categorize changes by type: feature addition, bug fix, refactoring, documentation, etc.
-   * Group related changes by module/functionality
-   * Separate logical changes from cosmetic/formatting changes
+## Change Type Classification
 
-3. **Deep Analysis**
-   * Identify the core intent of the changes
-   * Map modified files to business domains or technical components
-   * Analyze data flow changes: input/output modifications, API changes
-   * Assess impact scope: which parts of the system will be affected
-   * Check for potential issues: breaking changes, security risks, performance implications
+| Type | Description |
+|------|-------------|
+| **Feature** | New functionality, endpoints, UI, or logic |
+| **Bug Fix** | Corrects behavior, crashes, or errors |
+| **Refactor** | Structure changes without logic change (cleanup, renaming) |
+| **Perf** | Improves performance/latency/resource usage |
+| **Docs** | Updates to documentation/comments |
+| **Style** | Formatting/whitespace only |
+| **Test** | Test cases added/modified |
+| **Deps** | Dependency updates |
+| **Config** | Config/env/deployment settings |
+| **Breaking** | Breaks backward compatibility |
 
-4. **Structure Output**
-   * Follow the template in `templates/analysis-output.md`
-   * Use clear, non-technical language where possible for business stakeholders
-   * Include code snippets for critical changes when helpful
-   * Highlight important notes and recommendations
+## Risk Assessment Guidelines
 
-5. **Validation**
-   * Cross-verify the analysis with commit messages and PR descriptions
-   * Ensure no critical changes are missed in the summary
-   * Flag ambiguous changes that need further clarification
+- **High Risk**: Breaking API changes, Auth logic, Data persistence/schema, Critical path (payment/core), Security changes, Removal of functionality.
+- **Medium Risk**: Performance code, Major dependency updates, Error handling flow, Shared utilities, Production config.
+- **Low Risk**: Docs, UI (cosmetic), Tests, Formatting, Logging, Isolated non-critical features.
+- **Flags**: Missing tests, Large unfocused commits, Ambiguous messages, Magic numbers, Pattern deviations.
 
-## Resources
-- Refer to `resources/change-types.md` for standard change classification
-- Refer to `resources/risk-assessment.md` for potential issue identification guidelines
+## Output Template
+
+```markdown
+# MR/Commit Change Analysis
+
+## Basic Information
+- **ID:** {id} | **Author:** {author} | **Date:** {date}
+- **Stats:** +{additions} / -{deletions} lines, {files} files
+- **Type:** {primary_change_type}
+
+## Core Intent
+{concise description of main purpose}
+
+## Key Changes by Module
+### {module_name}
+- {change_description}
+
+## Impact Analysis
+- **Components:** {component_1}, {component_2}
+- **Compat:** ✅ Full | ⚠️ Partial | ❌ Breaking ({explanation})
+- **Perf:** ✅ None | ⚠️ Improved | ⚠️ Degraded | ❌ Significant ({explanation})
+
+## Risk Assessment
+- **High:** {list or "None"}
+- **Medium:** {list or "None"}
+
+## Recommendations
+- {recommendation_1}
+
+## Critical Code Snippets
+```{language}
+{code_snippet}
+```
+*Why: {explanation}*
+```
